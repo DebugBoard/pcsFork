@@ -35,6 +35,7 @@ interface DeviceConfigPropertiesRepository {
         const val AICORE_CALL_NOTES_LANGUAGE = "persist.aicore.call_notes_language"
         const val TTS_ENABLED = "persist.tts.pcs_enabled"
         const val AGENT_ENABLED = "persist.agent.pcs_enabled"
+        const val AGENT_SCREENSHOTS_LANGUAGE = "persist.agent.pcs_screenshots_language"
     }
 
     /**

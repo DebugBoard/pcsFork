@@ -98,6 +98,7 @@ private data class Interactions(
     val onPhoneEnabledChanged: (Boolean) -> Unit,
     val onTtsEnabledChanged: (Boolean) -> Unit,
     val onAgentEnabledChanged: (Boolean) -> Unit,
+    val onAgentScreenshotsLanguageChanged: (Boolean) -> Unit,
     val onClearOverridesClicked: () -> Unit,
     val onClientGroupOverrideChanged: (ClientGroupOverride) -> Unit,
 ) {
@@ -147,6 +148,7 @@ private data class Interactions(
             onPhoneEnabledChanged = {},
             onTtsEnabledChanged = {},
             onAgentEnabledChanged = {},
+            onAgentScreenshotsLanguageChanged = {},
             onClearOverridesClicked = {},
             onClientGroupOverrideChanged = {}
         )
@@ -202,6 +204,7 @@ fun ExperimentsScreen() = ProvidePreferenceLocals {
         onPhoneEnabledChanged = viewModel::onPhoneEnabledChanged,
         onTtsEnabledChanged = viewModel::onTtsEnabledChanged,
         onAgentEnabledChanged = viewModel::onAgentEnabledChanged,
+        onAgentScreenshotsLanguageChanged = viewModel::onAgentScreenshotsLanguageChanged,
         onClearOverridesClicked = viewModel::onClearOverridesClicked,
         onClientGroupOverrideChanged = viewModel::onClientGroupOverrideChanged
     )
@@ -1392,6 +1395,35 @@ private fun LoadedContent(state: State.Loaded, interactions: Interactions) {
             },
             onValueChange = interactions.onAsForceGSAChanged
         )
+
+        if (state.agentAvailable) {
+            preferenceCategory(
+                key = "category_screenshots",
+                title = {
+                    Text(stringResource(R.string.screen_experiments_category_screenshots))
+                }
+            )
+
+            val screenshotsLanguageShape = Shape(1, 0)
+            switchPreference(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .background(color = surface, shape = screenshotsLanguageShape)
+                    .clip(screenshotsLanguageShape),
+                value = state.propertiesState.agentScreenshotsLanguage,
+                key = "agent_screenshots_language",
+                title = {
+                    Text(
+                        text = stringResource(R.string.screen_experiments_agent_screenshots_language_title),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                summary = {
+                    Text(text = textResource(R.string.screen_experiments_agent_screenshots_language_content))
+                },
+                onValueChange = interactions.onAgentScreenshotsLanguageChanged
+            )
+        }
 
         preferenceCategory(
             key = "category_advanced",
