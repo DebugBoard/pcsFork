@@ -11,6 +11,7 @@ import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_AS
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_PHONE
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_PSI
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_TTS
+import com.kieronquinn.app.pcs.phonestrings.PhoneStrings
 import com.kieronquinn.app.pcs.model.ClientGroupOverride
 import com.kieronquinn.app.pcs.directmycall.MenuParser
 import com.kieronquinn.app.pcs.voicepack.HoldForMePrompts
@@ -36,6 +37,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
+import java.io.FileNotFoundException
 import kotlinx.coroutines.launch
 
 abstract class ExperimentsViewModel: ViewModel() {
@@ -67,6 +69,7 @@ abstract class ExperimentsViewModel: ViewModel() {
     abstract fun onPhoneXatuPhoneLanguageChanged(enabled: Boolean)
     abstract fun onPhoneAtlasEveryNumberChanged(enabled: Boolean)
     abstract fun onPhoneXatuEveryNumberChanged(enabled: Boolean)
+    abstract fun onPhoneStringsPhoneLanguageChanged(enabled: Boolean)
     abstract fun onPhoneCallerTagsEnabledChanged(enabled: Boolean)
     abstract fun onPhoneFermatEnabledChanged(enabled: Boolean)
     abstract fun onPhoneExpressoEnabledChanged(enabled: Boolean)
@@ -110,7 +113,9 @@ abstract class ExperimentsViewModel: ViewModel() {
             val holdForMeTranslationAvailable: Boolean,
             val holdForMePack: VoicePackRepository.State,
             /** Whether PCS can read phone menus in the phone's language. */
-            val directMyCallMenuParserAvailable: Boolean
+            val directMyCallMenuParserAvailable: Boolean,
+            /** Whether PCS ships Phone's English-only text in the phone's language. */
+            val phoneStringsTranslationAvailable: Boolean
         ): State()
     }
 
@@ -157,6 +162,7 @@ class ExperimentsViewModelImpl(
     private val phoneXatuPhoneLanguage = settingsRepository.phoneXatuPhoneLanguage
     private val phoneAtlasEveryNumber = settingsRepository.phoneAtlasEveryNumber
     private val phoneXatuEveryNumber = settingsRepository.phoneXatuEveryNumber
+    private val phoneStringsPhoneLanguage = settingsRepository.phoneStringsPhoneLanguage
     private val phoneXatuEnabled = settingsRepository.phoneXatuEnabled
     private val phoneXatuModels = settingsRepository.phoneXatuModels
     private val phoneCallerTagsEnabled = settingsRepository.phoneCallerTagsEnabled
@@ -239,7 +245,8 @@ class ExperimentsViewModelImpl(
         phoneBeeslyPhoneLanguage.asFlow(),
         phoneXatuPhoneLanguage.asFlow(),
         phoneAtlasEveryNumber.asFlow(),
-        phoneXatuEveryNumber.asFlow()
+        phoneXatuEveryNumber.asFlow(),
+        phoneStringsPhoneLanguage.asFlow()
     ) {
         it
     }
@@ -301,7 +308,8 @@ class ExperimentsViewModelImpl(
             beeslyPhoneLanguage = booleans[16],
             xatuPhoneLanguage = booleans[17],
             atlasEveryNumber = booleans[18],
-            xatuEveryNumber = booleans[19]
+            xatuEveryNumber = booleans[19],
+            stringsPhoneLanguage = booleans[20]
         )
     }
 
@@ -312,6 +320,22 @@ class ExperimentsViewModelImpl(
         emit(
             try {
                 VoicePackTranslations.forPhone(appContext, assetDirectory) != null
+            } catch (e: Exception) {
+                false
+            }
+        )
+    }.flowOn(Dispatchers.IO)
+
+    private val isPhoneStringsTranslationAvailable = flow {
+        emit(
+            try {
+                PhoneStrings.forLocale(VoicePackTranslations.phoneLocale()) { path ->
+                    try {
+                        appContext.assets.open(path)
+                    } catch (e: FileNotFoundException) {
+                        null
+                    }
+                } != null
             } catch (e: Exception) {
                 false
             }
@@ -357,9 +381,9 @@ class ExperimentsViewModelImpl(
         packageStates,
         propertiesRepository.state,
         phoneSettings,
-        dobbyRegions,
+        dobbyRegions.combine(isPhoneStringsTranslationAvailable, ::Pair),
         packs
-    ) { packageStates, propertiesState, phoneSettings, dobbyRegions, packs ->
+    ) { packageStates, propertiesState, phoneSettings, (dobbyRegions, phoneStringsAvailable), packs ->
         val (isAgentAvailable, isPhoneAvailable, magicCueAvailable, nowPlayingAvailable,
             isAiCoreAvailable) = packageStates
         State.Loaded(
@@ -376,7 +400,8 @@ class ExperimentsViewModelImpl(
             takeAMessagePack = packs.takeAMessage,
             holdForMeTranslationAvailable = packs.holdForMeTranslationAvailable,
             holdForMePack = packs.holdForMe,
-            directMyCallMenuParserAvailable = MenuParser.forLocale(VoicePackTranslations.phoneLocale()) != null
+            directMyCallMenuParserAvailable = MenuParser.forLocale(VoicePackTranslations.phoneLocale()) != null,
+            phoneStringsTranslationAvailable = phoneStringsAvailable
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, State.Loading)
 
@@ -543,6 +568,13 @@ class ExperimentsViewModelImpl(
     override fun onPhoneXatuEveryNumberChanged(enabled: Boolean) {
         viewModelScope.launch {
             phoneXatuEveryNumber.set(enabled)
+            forceStopPhone()
+        }
+    }
+
+    override fun onPhoneStringsPhoneLanguageChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            phoneStringsPhoneLanguage.set(enabled)
             forceStopPhone()
         }
     }
