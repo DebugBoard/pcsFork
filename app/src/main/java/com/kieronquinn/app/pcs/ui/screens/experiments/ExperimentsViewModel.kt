@@ -64,6 +64,7 @@ abstract class ExperimentsViewModel: ViewModel() {
     abstract fun onAsNowPlayingChanged(enabled: Boolean)
     abstract fun onAsForceGSAChanged(enabled: Boolean)
     abstract fun onAiCoreUnloadInferenceChanged(enabled: Boolean)
+    abstract fun onAiCoreCallNotesLanguageChanged(enabled: Boolean)
 
     abstract fun onPhoneEnabledChanged(enabled: Boolean)
     abstract fun onTtsEnabledChanged(enabled: Boolean)
@@ -456,6 +457,12 @@ class ExperimentsViewModelImpl(
     override fun onAiCoreUnloadInferenceChanged(enabled: Boolean) {
         viewModelScope.launch {
             propertiesRepository.setAiCoreUnloadInference(enabled)
+        }
+    }
+
+    override fun onAiCoreCallNotesLanguageChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            propertiesRepository.setAiCoreCallNotesLanguage(enabled)
         }
     }
 
