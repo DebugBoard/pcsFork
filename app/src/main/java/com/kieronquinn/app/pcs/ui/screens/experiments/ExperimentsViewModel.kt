@@ -65,6 +65,8 @@ abstract class ExperimentsViewModel: ViewModel() {
     abstract fun onPhoneXatuAllowMeteredChanged(enabled: Boolean)
     abstract fun onPhoneXatuEnabledChanged(enabled: Boolean)
     abstract fun onPhoneXatuPhoneLanguageChanged(enabled: Boolean)
+    abstract fun onPhoneAtlasEveryNumberChanged(enabled: Boolean)
+    abstract fun onPhoneXatuEveryNumberChanged(enabled: Boolean)
     abstract fun onPhoneCallerTagsEnabledChanged(enabled: Boolean)
     abstract fun onPhoneFermatEnabledChanged(enabled: Boolean)
     abstract fun onPhoneExpressoEnabledChanged(enabled: Boolean)
@@ -153,6 +155,8 @@ class ExperimentsViewModelImpl(
     private val phoneSonicEnabled = settingsRepository.phoneSonicEnabled
     private val phoneXatuAllowMetered = settingsRepository.phoneXatuAllowMetered
     private val phoneXatuPhoneLanguage = settingsRepository.phoneXatuPhoneLanguage
+    private val phoneAtlasEveryNumber = settingsRepository.phoneAtlasEveryNumber
+    private val phoneXatuEveryNumber = settingsRepository.phoneXatuEveryNumber
     private val phoneXatuEnabled = settingsRepository.phoneXatuEnabled
     private val phoneXatuModels = settingsRepository.phoneXatuModels
     private val phoneCallerTagsEnabled = settingsRepository.phoneCallerTagsEnabled
@@ -233,7 +237,9 @@ class ExperimentsViewModelImpl(
         phoneSharpiePhoneLanguage.asFlow(),
         phoneAtlasPhoneLanguage.asFlow(),
         phoneBeeslyPhoneLanguage.asFlow(),
-        phoneXatuPhoneLanguage.asFlow()
+        phoneXatuPhoneLanguage.asFlow(),
+        phoneAtlasEveryNumber.asFlow(),
+        phoneXatuEveryNumber.asFlow()
     ) {
         it
     }
@@ -293,7 +299,9 @@ class ExperimentsViewModelImpl(
             sharpiePhoneLanguage = booleans[14],
             atlasPhoneLanguage = booleans[15],
             beeslyPhoneLanguage = booleans[16],
-            xatuPhoneLanguage = booleans[17]
+            xatuPhoneLanguage = booleans[17],
+            atlasEveryNumber = booleans[18],
+            xatuEveryNumber = booleans[19]
         )
     }
 
@@ -521,6 +529,20 @@ class ExperimentsViewModelImpl(
     override fun onPhoneXatuPhoneLanguageChanged(enabled: Boolean) {
         viewModelScope.launch {
             phoneXatuPhoneLanguage.set(enabled)
+            forceStopPhone()
+        }
+    }
+
+    override fun onPhoneAtlasEveryNumberChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            phoneAtlasEveryNumber.set(enabled)
+            forceStopPhone()
+        }
+    }
+
+    override fun onPhoneXatuEveryNumberChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            phoneXatuEveryNumber.set(enabled)
             forceStopPhone()
         }
     }
