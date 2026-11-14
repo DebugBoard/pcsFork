@@ -5,10 +5,12 @@ import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_AIC
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_AS
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_PSI
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_TTS
+import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_WEATHER
 import com.kieronquinn.app.pcs.model.ClientGroupOverride
 import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.AGENT_ENABLED
 import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.AGENT_SCREENSHOTS_LANGUAGE
 import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.AICORE_CALL_NOTES_LANGUAGE
+import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.WEATHER_SUMMARY_LANGUAGE
 import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.AICORE_UNLOAD_INFERENCE
 import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.AS_FORCE_GSA
 import com.kieronquinn.app.pcs.repositories.DeviceConfigPropertiesRepository.Companion.AS_GEMINI_DAILY_BRIEF
@@ -52,6 +54,7 @@ interface PropertiesRepository {
     suspend fun setTtsEnabled(enabled: Boolean)
     suspend fun setAgentEnabled(enabled: Boolean)
     suspend fun setAgentScreenshotsLanguage(enabled: Boolean)
+    suspend fun setWeatherSummaryLanguage(enabled: Boolean)
 
     data class State(
         val debug: Boolean = false,
@@ -68,6 +71,7 @@ interface PropertiesRepository {
         val ttsEnabled: Boolean = false,
         val agentEnabled: Boolean = false,
         val agentScreenshotsLanguage: Boolean = false,
+        val weatherSummaryLanguage: Boolean = false,
         val clientGroupOverride: ClientGroupOverride = ClientGroupOverride.DISABLED
     )
 
@@ -169,6 +173,12 @@ class PropertiesRepositoryImpl(
         refreshBus.emit(System.currentTimeMillis())
     }
 
+    override suspend fun setWeatherSummaryLanguage(enabled: Boolean) {
+        deviceConfigPropertiesRepository.setProperty(WEATHER_SUMMARY_LANGUAGE, enabled.toString())
+        deviceConfigPropertiesRepository.forceStopPackage(PACKAGE_NAME_WEATHER)
+        refreshBus.emit(System.currentTimeMillis())
+    }
+
     private fun getState(): State {
         return State(
             SystemProperties_getBoolean(DEBUG_PROPERTY_NAME, false),
@@ -185,6 +195,7 @@ class PropertiesRepositoryImpl(
             SystemProperties_getBoolean(TTS_ENABLED, false),
             SystemProperties_getBoolean(AGENT_ENABLED, false),
             SystemProperties_getBoolean(AGENT_SCREENSHOTS_LANGUAGE, false),
+            SystemProperties_getBoolean(WEATHER_SUMMARY_LANGUAGE, false),
             ClientGroupOverride.from(SystemProperties_get(PSI_CLIENT_GROUP_OVERRIDE_PROPERTY_NAME))
         )
     }

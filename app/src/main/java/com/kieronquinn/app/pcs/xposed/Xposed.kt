@@ -8,6 +8,7 @@ import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_PCS
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_PHONE
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_PSI
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_TTS
+import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_WEATHER
 import de.robv.android.xposed.IXposedHookLoadPackage
 import de.robv.android.xposed.callbacks.XC_LoadPackage
 
@@ -41,6 +42,9 @@ class Xposed: IXposedHookLoadPackage {
             PACKAGE_NAME_AIC -> {
                 AiCoreHooks.hook(lpparam)
                 CallNotesLanguageHooks.hook(lpparam)
+            }
+            PACKAGE_NAME_WEATHER -> {
+                WeatherSummaryHooks.hook(lpparam)
             }
         }
         if (lpparam.packageName != BuildConfig.APPLICATION_ID &&
