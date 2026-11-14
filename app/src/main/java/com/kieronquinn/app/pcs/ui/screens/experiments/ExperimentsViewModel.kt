@@ -41,6 +41,7 @@ abstract class ExperimentsViewModel: ViewModel() {
     abstract fun onPhoneSharpieCountryModeChanged(mode: SharpieCountryMode)
     abstract fun onPhoneSharpieCountryChanged(country: String)
     abstract fun onPhoneSharpieEnabledChanged(enabled: Boolean)
+    abstract fun onPhoneSharpiePhoneLanguageChanged(enabled: Boolean)
     abstract fun onPhoneDobbyEnabledChanged(enabled: Boolean)
     abstract fun onPhoneDobbyRegionChanged(region: DobbyRegion)
     abstract fun onPhoneAtlasEnabledChanged(enabled: Boolean)
@@ -107,6 +108,7 @@ class ExperimentsViewModelImpl(
     private val phoneSharpieCountryMode = settingsRepository.phoneSharpieCountryMode
     private val phoneSharpieCountry = settingsRepository.phoneSharpieCountry
     private val phoneSharpieEnabled = settingsRepository.phoneSharpieEnabled
+    private val phoneSharpiePhoneLanguage = settingsRepository.phoneSharpiePhoneLanguage
     private val phoneDobbyEnabled = settingsRepository.phoneDobbyEnabled
     private val phoneDobbyRegion = settingsRepository.phoneDobbyRegion
     private val phoneDobbyUrl = settingsRepository.phoneDobbyUrl
@@ -195,7 +197,8 @@ class ExperimentsViewModelImpl(
         phoneCallRecordingEnabled.asFlow(),
         phoneXatuAllowMetered.asFlow(),
         phoneManifestHandlingEnabled.asFlow(),
-        phoneDebugLogging.asFlow()
+        phoneDebugLogging.asFlow(),
+        phoneSharpiePhoneLanguage.asFlow()
     ) {
         it
     }
@@ -251,7 +254,8 @@ class ExperimentsViewModelImpl(
             sharpieCountry = strings[5],
             xatuAllowMetered = booleans[11],
             manifestHandlingEnabled = booleans[12],
-            debugLogging = booleans[13]
+            debugLogging = booleans[13],
+            sharpiePhoneLanguage = booleans[14]
         )
     }
 
@@ -316,6 +320,13 @@ class ExperimentsViewModelImpl(
     override fun onPhoneSharpieEnabledChanged(enabled: Boolean) {
         viewModelScope.launch {
             phoneSharpieEnabled.set(enabled)
+            forceStopPhone()
+        }
+    }
+
+    override fun onPhoneSharpiePhoneLanguageChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            phoneSharpiePhoneLanguage.set(enabled)
             forceStopPhone()
         }
     }
