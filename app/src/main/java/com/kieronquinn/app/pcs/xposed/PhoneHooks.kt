@@ -104,6 +104,9 @@ object PhoneHooks: GrpcHooks() {
         if (settings.fermatEnabled || settings.callRecordingEnabled || settings.beeslyEnabled) {
             DisclaimerCountryHooks.install(dexKit, classLoader)
         }
+        if (settings.fermatEnabled && settings.fermatPhoneLanguage) {
+            CallActionsLanguageHooks.install(dexKit, classLoader, application)
+        }
         hookSharpieCountry(dexKit, settings)
         hookSharpieLocale(dexKit, settings, application)
         hookCallScreen(dexKit, settings)

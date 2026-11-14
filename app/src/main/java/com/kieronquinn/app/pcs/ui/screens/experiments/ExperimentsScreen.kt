@@ -78,6 +78,7 @@ private data class Interactions(
     val onPhoneAtlasEveryNumberChanged: (Boolean) -> Unit,
     val onPhoneXatuEveryNumberChanged: (Boolean) -> Unit,
     val onPhoneStringsPhoneLanguageChanged: (Boolean) -> Unit,
+    val onPhoneFermatPhoneLanguageChanged: (Boolean) -> Unit,
     val onPhoneCallerTagsEnabledChanged: (Boolean) -> Unit,
     val onPhoneFermatEnabledChanged: (Boolean) -> Unit,
     val onPhoneExpressoEnabledChanged: (Boolean) -> Unit,
@@ -91,6 +92,7 @@ private data class Interactions(
     val onAsForceGSAChanged: (Boolean) -> Unit,
     val onAiCoreUnloadInferenceChanged: (Boolean) -> Unit,
     val onAiCoreCallNotesLanguageChanged: (Boolean) -> Unit,
+    val onAsNotificationOrganizerChanged: (Boolean) -> Unit,
     val onClearMddClicked: () -> Unit,
     val onPhoneEnabledChanged: (Boolean) -> Unit,
     val onTtsEnabledChanged: (Boolean) -> Unit,
@@ -124,6 +126,7 @@ private data class Interactions(
             onPhoneAtlasEveryNumberChanged = {},
             onPhoneXatuEveryNumberChanged = {},
             onPhoneStringsPhoneLanguageChanged = {},
+            onPhoneFermatPhoneLanguageChanged = {},
             onPhoneCallerTagsEnabledChanged = {},
             onPhoneFermatEnabledChanged = {},
             onPhoneExpressoEnabledChanged = {},
@@ -137,6 +140,7 @@ private data class Interactions(
             onAsForceGSAChanged = {},
             onAiCoreUnloadInferenceChanged = {},
             onAiCoreCallNotesLanguageChanged = {},
+            onAsNotificationOrganizerChanged = {},
             onClearMddClicked = {},
             onPhoneEnabledChanged = {},
             onTtsEnabledChanged = {},
@@ -176,6 +180,7 @@ fun ExperimentsScreen() = ProvidePreferenceLocals {
         onPhoneAtlasEveryNumberChanged = viewModel::onPhoneAtlasEveryNumberChanged,
         onPhoneXatuEveryNumberChanged = viewModel::onPhoneXatuEveryNumberChanged,
         onPhoneStringsPhoneLanguageChanged = viewModel::onPhoneStringsPhoneLanguageChanged,
+        onPhoneFermatPhoneLanguageChanged = viewModel::onPhoneFermatPhoneLanguageChanged,
         onPhoneCallerTagsEnabledChanged = viewModel::onPhoneCallerTagsEnabledChanged,
         onPhoneFermatEnabledChanged = viewModel::onPhoneFermatEnabledChanged,
         onPhoneExpressoEnabledChanged = viewModel::onPhoneExpressoEnabledChanged,
@@ -189,6 +194,7 @@ fun ExperimentsScreen() = ProvidePreferenceLocals {
         onAsForceGSAChanged = viewModel::onAsForceGSAChanged,
         onAiCoreUnloadInferenceChanged = viewModel::onAiCoreUnloadInferenceChanged,
         onAiCoreCallNotesLanguageChanged = viewModel::onAiCoreCallNotesLanguageChanged,
+        onAsNotificationOrganizerChanged = viewModel::onAsNotificationOrganizerChanged,
         onClearMddClicked = viewModel::onClearMddClicked,
         onPhoneEnabledChanged = viewModel::onPhoneEnabledChanged,
         onTtsEnabledChanged = viewModel::onTtsEnabledChanged,
@@ -1006,6 +1012,31 @@ private fun LoadedContent(state: State.Loaded, interactions: Interactions) {
                 }
             )
 
+            if (state.phoneSettings.fermatEnabled && state.callNotesTranslationAvailable) {
+                item {
+                    Spacer(Modifier.height(2.dp))
+                }
+
+                switchPreference(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .background(color = surface, shape = fermatShape)
+                        .clip(fermatShape),
+                    value = state.phoneSettings.fermatPhoneLanguage,
+                    key = "phone_flags_fermat_phone_language",
+                    title = { _ ->
+                        Text(
+                            text = stringResource(R.string.screen_experiments_phone_fermat_phone_language),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    summary = { _ ->
+                        Text(text = stringResource(R.string.screen_experiments_phone_fermat_phone_language_summary))
+                    },
+                    onValueChange = interactions.onPhoneFermatPhoneLanguageChanged
+                )
+            }
+
             item {
                 Spacer(Modifier.height(2.dp))
             }
@@ -1282,6 +1313,33 @@ private fun LoadedContent(state: State.Loaded, interactions: Interactions) {
         }
 
         preferenceCategory(
+            key = "category_notifications",
+            title = {
+                Text(stringResource(R.string.screen_experiments_category_notifications))
+            }
+        )
+
+        val notificationOrganizerShape = Shape(1, 0)
+        switchPreference(
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
+                .background(color = surface, shape = notificationOrganizerShape)
+                .clip(notificationOrganizerShape),
+            value = state.propertiesState.asNotificationOrganizer,
+            key = "as_notification_organizer",
+            title = {
+                Text(
+                    text = stringResource(R.string.screen_experiments_as_notification_organizer_title),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            summary = {
+                Text(text = textResource(R.string.screen_experiments_as_notification_organizer_content))
+            },
+            onValueChange = interactions.onAsNotificationOrganizerChanged
+        )
+
+        preferenceCategory(
             key = "category_aag",
             title = {
                 Text(stringResource(R.string.screen_experiments_category_glance))
@@ -1512,7 +1570,8 @@ private fun ContentPreviewLight() {
             holdForMeTranslationAvailable = false,
             holdForMePack = VoicePackRepository.State.Checking,
             directMyCallMenuParserAvailable = false,
-            phoneStringsTranslationAvailable = false
+            phoneStringsTranslationAvailable = false,
+            callNotesTranslationAvailable = false
         )
         LoadedContent(state, Interactions.PREVIEW)
     }
