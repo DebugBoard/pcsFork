@@ -44,6 +44,8 @@ jobs:
           EOF
           echo "MANIFEST_KEY=00000000000000000000000000000000" > app/sekret.properties
           mkdir -p app/sekret
+          # Sekret only copies the native library into jniLibs if the folder already exists.
+          mkdir -p app/src/main/jniLibs
 
       - name: Generate Sekret module
         run: |
