@@ -30,6 +30,7 @@ interface SettingsRepository: BaseSettingsRepository {
     val phoneDobbyRegion: PcsSetting<DobbyRegion>
     val phoneAtlasEnabled: PcsSetting<Boolean>
     val phoneAtlasModels: PcsSetting<String>
+    val phoneAtlasPhoneLanguage: PcsSetting<Boolean>
     val phoneBeeslyEnabled: PcsSetting<Boolean>
     val phoneBeesly: PcsSetting<String>
     val phoneBeeslyRegion: PcsSetting<BeeslyRegion>
@@ -69,7 +70,12 @@ interface SettingsRepository: BaseSettingsRepository {
         IE(R.string.screen_experiments_phone_feature_dobby_region_ie, "en-GB"), // Uses UK
         JP(R.string.screen_experiments_phone_feature_dobby_region_jp, "ja-JP"),
         AU(R.string.screen_experiments_phone_feature_dobby_region_au, "en-AU"),
-        IN(R.string.screen_experiments_phone_feature_dobby_region_in, getIndiaLocale());
+        IN(R.string.screen_experiments_phone_feature_dobby_region_in, getIndiaLocale()),
+        /**
+         *  Call Screen in the phone's language. Phone downloads the US agentic pack, and PCS
+         *  builds a copy in the phone's language on the device from it.
+         */
+        PHONE(R.string.screen_experiments_phone_feature_dobby_region_phone, "en-US");
 
         companion object {
             fun getDefault(): DobbyRegion {
@@ -173,6 +179,8 @@ class SettingsRepositoryImpl(
         private const val DEFAULT_PHONE_ATLAS_ENABLED = false
 
         private const val KEY_PHONE_ATLAS_MODELS = "phone_atlas_models"
+        private const val KEY_PHONE_ATLAS_PHONE_LANGUAGE = "phone_atlas_phone_language"
+        private const val DEFAULT_PHONE_ATLAS_PHONE_LANGUAGE = false
         private const val DEFAULT_PHONE_ATLAS_MODELS = ""
 
         private const val KEY_PHONE_BEESLY_ENABLED = "phone_beesly_enabled"
@@ -236,6 +244,7 @@ class SettingsRepositoryImpl(
     override val phoneDobbyRegion = enum(KEY_PHONE_DOBBY_REGION, DEFAULT_PHONE_DOBBY_REGION)
     override val phoneAtlasEnabled = boolean(KEY_PHONE_ATLAS_ENABLED, DEFAULT_PHONE_ATLAS_ENABLED)
     override val phoneAtlasModels = string(KEY_PHONE_ATLAS_MODELS, DEFAULT_PHONE_ATLAS_MODELS)
+    override val phoneAtlasPhoneLanguage = boolean(KEY_PHONE_ATLAS_PHONE_LANGUAGE, DEFAULT_PHONE_ATLAS_PHONE_LANGUAGE)
     override val phoneBeeslyEnabled = boolean(KEY_PHONE_BEESLY_ENABLED, DEFAULT_PHONE_BEESLY_ENABLED)
     override val phoneBeesly = string(KEY_PHONE_BEESLY, DEFAULT_PHONE_BEESLY)
     override val phoneBeeslyRegion = enum(KEY_PHONE_BEESLY_REGION, DEFAULT_PHONE_BEESLY_REGION)

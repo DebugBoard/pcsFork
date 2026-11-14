@@ -31,11 +31,15 @@ data class PhoneSettings(
     val manifestHandlingEnabled: Boolean = false,
     val debugLogging: Boolean = false,
     val xatuAllowMetered: Boolean = true,
-    val sharpiePhoneLanguage: Boolean = false
+    val sharpiePhoneLanguage: Boolean = false,
+    val atlasPhoneLanguage: Boolean = false
 ): Parcelable {
 
+    /** Only the agentic pack can be built in the phone's language. */
     val effectiveCallScreenMode: SettingsRepository.CallScreenMode
-        get() = callScreenMode
+        get() = if (dobbyRegion == SettingsRepository.DobbyRegion.PHONE) {
+            SettingsRepository.CallScreenMode.FORCE_AGENTIC
+        } else callScreenMode
 
     fun getSharpieCountryOverride(country: String): Boolean? {
         if (!sharpieEnabled) return null
