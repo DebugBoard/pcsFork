@@ -101,6 +101,7 @@ private data class Interactions(
     val onAgentScreenshotsLanguageChanged: (Boolean) -> Unit,
     val onWeatherSummaryLanguageChanged: (Boolean) -> Unit,
     val onJournalLanguageChanged: (Boolean) -> Unit,
+    val onSafetyCarCrashChanged: (Boolean) -> Unit,
     val onClearOverridesClicked: () -> Unit,
     val onClientGroupOverrideChanged: (ClientGroupOverride) -> Unit,
 ) {
@@ -153,6 +154,7 @@ private data class Interactions(
             onAgentScreenshotsLanguageChanged = {},
             onWeatherSummaryLanguageChanged = {},
             onJournalLanguageChanged = {},
+            onSafetyCarCrashChanged = {},
             onClearOverridesClicked = {},
             onClientGroupOverrideChanged = {}
         )
@@ -211,6 +213,7 @@ fun ExperimentsScreen() = ProvidePreferenceLocals {
         onAgentScreenshotsLanguageChanged = viewModel::onAgentScreenshotsLanguageChanged,
         onWeatherSummaryLanguageChanged = viewModel::onWeatherSummaryLanguageChanged,
         onJournalLanguageChanged = viewModel::onJournalLanguageChanged,
+        onSafetyCarCrashChanged = viewModel::onSafetyCarCrashChanged,
         onClearOverridesClicked = viewModel::onClearOverridesClicked,
         onClientGroupOverrideChanged = viewModel::onClientGroupOverrideChanged
     )
@@ -1489,6 +1492,35 @@ private fun LoadedContent(state: State.Loaded, interactions: Interactions) {
             )
         }
 
+        if (state.safetyAvailable) {
+            preferenceCategory(
+                key = "category_safety",
+                title = {
+                    Text(stringResource(R.string.screen_experiments_category_safety))
+                }
+            )
+
+            val safetyCarCrashShape = Shape(1, 0)
+            switchPreference(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .background(color = surface, shape = safetyCarCrashShape)
+                    .clip(safetyCarCrashShape),
+                value = state.propertiesState.safetyCarCrash,
+                key = "safety_car_crash",
+                title = {
+                    Text(
+                        text = stringResource(R.string.screen_experiments_safety_car_crash_title),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                summary = {
+                    Text(text = textResource(R.string.screen_experiments_safety_car_crash_content))
+                },
+                onValueChange = interactions.onSafetyCarCrashChanged
+            )
+        }
+
         preferenceCategory(
             key = "category_advanced",
             title = {
@@ -1666,6 +1698,7 @@ private fun ContentPreviewLight() {
             agentAvailable = true,
             weatherAvailable = true,
             journalAvailable = true,
+            safetyAvailable = true,
             phoneSettings = PhoneSettings(
                 sharpieEnabled = false,
                 dobbyEnabled = false,

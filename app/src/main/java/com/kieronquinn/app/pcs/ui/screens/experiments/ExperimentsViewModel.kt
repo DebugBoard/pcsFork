@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_AGENT
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_JOURNAL
+import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_SAFETY
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_WEATHER
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_AIC
 import com.kieronquinn.app.pcs.PcsApplication.Companion.PACKAGE_NAME_AS
@@ -99,6 +100,7 @@ abstract class ExperimentsViewModel: ViewModel() {
     abstract fun onAgentScreenshotsLanguageChanged(enabled: Boolean)
     abstract fun onWeatherSummaryLanguageChanged(enabled: Boolean)
     abstract fun onJournalLanguageChanged(enabled: Boolean)
+    abstract fun onSafetyCarCrashChanged(enabled: Boolean)
     abstract fun onClearMddClicked()
     abstract fun onClearOverridesClicked()
     abstract fun onClientGroupOverrideChanged(override: ClientGroupOverride)
@@ -113,6 +115,7 @@ abstract class ExperimentsViewModel: ViewModel() {
             val agentAvailable: Boolean,
             val weatherAvailable: Boolean,
             val journalAvailable: Boolean,
+            val safetyAvailable: Boolean,
             val phoneSettings: PhoneSettings,
             val propertiesState: PropertiesRepository.State,
             /** Regions offered for Call Screen; [DobbyRegion.PHONE] only with a translation. */
@@ -228,6 +231,15 @@ class ExperimentsViewModelImpl(
     private val isJournalAvailable = flow {
         try {
             context.packageManager.getPackageInfo(PACKAGE_NAME_JOURNAL, 0)
+            emit(true)
+        } catch (e: PackageManager.NameNotFoundException) {
+            emit(false)
+        }
+    }
+
+    private val isSafetyAvailable = flow {
+        try {
+            context.packageManager.getPackageInfo(PACKAGE_NAME_SAFETY, 0)
             emit(true)
         } catch (e: PackageManager.NameNotFoundException) {
             emit(false)
@@ -392,7 +404,8 @@ class ExperimentsViewModelImpl(
         isNowPlayingAvailable,
         isAiCoreAvailable,
         isWeatherAvailable,
-        isJournalAvailable
+        isJournalAvailable,
+        isSafetyAvailable
     ) {
         it
     }
@@ -425,6 +438,7 @@ class ExperimentsViewModelImpl(
             isAiCoreAvailable) = packageStates
         val isWeatherAvailable = packageStates[5]
         val isJournalAvailable = packageStates[6]
+        val isSafetyAvailable = packageStates[7]
         State.Loaded(
             magicCueAvailable = magicCueAvailable,
             nowPlayingAvailable = nowPlayingAvailable,
@@ -433,6 +447,7 @@ class ExperimentsViewModelImpl(
             agentAvailable = isAgentAvailable,
             weatherAvailable = isWeatherAvailable,
             journalAvailable = isJournalAvailable,
+            safetyAvailable = isSafetyAvailable,
             phoneSettings = phoneSettings,
             propertiesState = propertiesState,
             dobbyRegions = dobbyRegions,
@@ -769,6 +784,12 @@ class ExperimentsViewModelImpl(
     override fun onJournalLanguageChanged(enabled: Boolean) {
         viewModelScope.launch {
             propertiesRepository.setJournalLanguage(enabled)
+        }
+    }
+
+    override fun onSafetyCarCrashChanged(enabled: Boolean) {
+        viewModelScope.launch {
+            propertiesRepository.setSafetyCarCrash(enabled)
         }
     }
 
