@@ -60,11 +60,18 @@ jobs:
           assert "compileSdk" in open(p).read(), "could not add compileSdk to the Sekret module"
           EOF
 
+      # The app loads libsekret.so on start, so the APK crashes without it.
+      - name: Build Sekret native library
+        run: ./gradlew :app:createAndCopySekretNativeBinary
+
       - name: Unit tests
         run: ./gradlew :app:testDebugUnitTest
 
       - name: Assemble debug APK
-        run: ./gradlew :app:assembleDebug
+        run: |
+          ./gradlew :app:assembleDebug
+          unzip -l app/build/outputs/apk/debug/*.apk | grep -q 'lib/arm64-v8a/libsekret.so' \
+            || { echo "libsekret.so missing from APK"; exit 1; }
 
       - name: Upload test reports
         if: always()
